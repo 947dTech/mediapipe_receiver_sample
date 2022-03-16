@@ -2,10 +2,17 @@
 
 - Author: Hiroaki Yaguchi, 947D-Tech.
 - ライセンス: Apache 2.0
+    - Google Mediapipeのコードを一部改変して利用しています。
+    - Apache 2.0, Copyright 2020 The MediaPipe Authors.
 
 ## 本プログラムについて
 
 筆者による改造版Mediapipeを使った情報取得のサンプルプログラムです。
+holistic trackingを用いることで、スマホ一台で全身トラッキングが可能です。
+
+Android側のアプリケーションは
+Humanoid Interface for Real-time Observation take 3の
+コントローラとして使用されているものと同一のプログラムになります。
 
 ### 必要なもの
 
@@ -41,12 +48,29 @@ $ bazelisk build mediapipe/examples/android/src/java/com/google/mediapipe/apps/h
 $ adb install bazel-bin/mediapipe/examples/android/src/java/com/google/mediapipe/apps/holistictrackinggpu/holistictrackinggpu.apk
 ```
 
+起動すると、イニシャライズ(そこそこ時間がかかります)の後、画面に認識結果が表示されます。
+設定されたIPアドレスのポート番号947D(10進数で38013)にUDPでデータを送信します。
+設定はアプリ側のsettingsから変更可能です。
 送信されてくるデータの仕様は基本的に元の仕様を参照してjsonにしたものです。
 
 https://google.github.io/mediapipe/solutions/holistic.html
 
+- `pose_world_landmarks`にm単位での姿勢認識結果が格納されます。
+- `pose_landmarks`に姿勢認識結果が格納されます。
+- `face_landmarks`に表情認識結果が格納されます。
+- `right_hand_landmarks`,`left_hand_landmarks`に両手の認識結果がそれぞれ格納されます。
+
 ただし、各ランドマークにタイムスタンプを追加しています。
 利用方法は本プログラムを参照してください。
+
+`pose_world_landmarks`以外の認識結果は
+画面のアスペクト比を考慮する必要があることに注意してください。
+
+デフォルトではインカメラを利用しています。
+そのため、鏡像であることに注意してください。
+
+また、スマホの向きを認識するための`gravity`を同時に送信しています。
+カメラ向きの推定にご利用ください。
 
 
 ## 本プログラムの動かし方
@@ -58,7 +82,7 @@ https://google.github.io/mediapipe/solutions/holistic.html
 - ip addressに送信先のipを入力
     - 間違えるとアプリが起動しなくなる恐れがあります。起動しなくなった場合はAndroidの設定からアプリの設定を消去して再起動してください。
 
-また、接続されているネットワークの設定でポート番号947Dを開放してください。
+また、接続されているネットワークの設定でポート番号947D(10進数で38013)のUDPを開放してください。
 この状態で、各プログラムを動かすことができます。
 
 注意: 各プログラム内で`-p`を与えることでポート番号を指定できますが、
@@ -112,3 +136,31 @@ $ python3 json_sender.py -i <ファイル名>
 ```
 $ python3 holistic_offline.py -i <入力ファイル名>
 ```
+
+## ROSパッケージについて
+
+mediapipe_receiver_rosにROSで動作するサンプルプログラムがあります。
+このディレクトリだけで動作するように作成してあります。
+
+### 利用方法
+
+```
+$ roslaunch mediapipe_receiver_ros holistic.launch
+```
+
+`holistic_receiver_node.py`が本体プログラムになります。
+
+- subscribe: なし(スマホからはUDPでデータが送信されます)
+- publish:
+    - `pose_landmarks` (visualization_msgs/Marker)
+    - `face_landmarks` (visualization_msgs/Marker)
+    - `right_hand_landmarks` (visualization_msgs/Marker)
+    - `left_hand_landmarks` (visualization_msgs/Marker)
+
+それぞれ表示用に必要な部分のみを抜き出しています。
+
+
+### 動作確認済み環境
+
+- ROS melodic
+- ROS noetic

@@ -1,0 +1,10 @@
+<launch>
+    <node pkg="mediapipe_receiver_ros"
+        type="holistic_receiver_node.py"
+        name="holistic_receiver_node"
+        output="screen" />
+    <node pkg="rviz" type="rviz" name="rviz"
+        args="-d $(find mediapipe_receiver_ros)/config/holistic_receiver.rviz" />
+    <node pkg="tf2_ros" type="static_transform_publisher"
+        name="smartphone_camera_frame" args="1 0 0 0 0 0 1 map smartphone/camera_frame" />
+</launch>
