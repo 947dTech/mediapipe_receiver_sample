@@ -1,0 +1,17 @@
+<package format="2">
+  <name>mediapipe_receiver_ros</name>
+  <version>1.0.0</version>
+  <description>
+    mediapipe receiver
+  </description>
+  <maintainer email="h-yaguchi@947d-tech.co.jp">Hiroaki Yaguchi</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>visualization_msgs</depend>
+
+</package>
