@@ -19,14 +19,30 @@ from std_msgs.msg import Header, ColorRGBA
 from geometry_msgs.msg import Pose, Point, Vector3, Quaternion
 from visualization_msgs.msg import Marker
 
-## @param aspect_ratio aspect ration of smartphone display
-##  2.17 = 19.5/9 for Google Pixel5
-def landmarks_to_points(landmarks, aspect_ratio=2.17):
+
+## @param aspect_ratio aspect ration of smartphone camera
+##  1280/720 = 1.78
+def landmarks_to_points(landmarks, aspect_ratio=1.78):
     points = []
     for lm in landmarks:
-        point = np.asarray([lm["x"], lm["y"], lm["z"]], dtype=np.float64)
+        point = np.asarray(
+            [(lm["x"] - 0.5) / aspect_ratio,
+             (lm["y"] - 0.5),
+             lm["z"] / aspect_ratio],
+            dtype=np.float64)
         points.append(point)
     return points
+
+
+def world_landmarks_to_points(landmarks):
+    points = []
+    for lm in landmarks:
+        point = np.asarray(
+            [lm["x"], lm["y"], lm["z"]],
+            dtype=np.float64)
+        points.append(point)
+    return points
+
 
 def create_marker_msg(stamp=rospy.Time(), r=1.0, g=0.0, b=0.0):
     marker = Marker()
@@ -305,7 +321,7 @@ def main():
 
             pose_stamp = dict_msg["pose_world_landmarks_stamp"]
             pose_landmarks = dict_msg["pose_world_landmarks"]
-            pose_points = landmarks_to_points(pose_landmarks, aspect_ratio=1.0)
+            pose_points = world_landmarks_to_points(pose_landmarks)
 
             pose_marker = create_marker_msg(stamp=local_time, r=0.0, g=1.0, b=0.0)
             pose_marker.action = Marker.ADD
@@ -375,7 +391,7 @@ def main():
             pub_face.publish(face_marker)
             pub_rhand.publish(rhand_marker)
             pub_lhand.publish(lhand_marker)
-            
+
     except KeyboardInterrupt:
         sock.close()
     except Exception as e:

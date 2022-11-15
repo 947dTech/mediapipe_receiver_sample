@@ -9,8 +9,6 @@ import json
 
 import math
 import numpy as np
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 parser = ArgumentParser()
 parser.add_argument("-p", type=int, help="port No.", default=0x947d)
@@ -28,7 +26,7 @@ if not os.path.exists(dirname):
     os.mkdir(dirname)
 
 if args.d > 0:
-    print("reciever will starts at %d seconds later." % (args.d)) 
+    print("reciever will starts at %d seconds later." % (args.d))
     time.sleep(args.d)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
