@@ -5,7 +5,8 @@ import json
 import math
 import numpy as np
 
-from .data_conversion import landmark_list
+from .data_conversion import landmark_list, world_landmark_list
+
 
 def holistic_list(dict_msg, aspect_ratio=1.0):
     pose_list = None
@@ -27,7 +28,7 @@ def holistic_list(dict_msg, aspect_ratio=1.0):
     if "pose_world_landmarks" in dict_msg:
         pose_world_landmarks = dict_msg["pose_world_landmarks"]
         pose_world_stamp = dict_msg["pose_world_landmarks_stamp"]
-        pose_world_list = landmark_list(pose_world_landmarks, aspect_ratio=1.0)
+        pose_world_list = world_landmark_list(pose_world_landmarks)
 
     if "face_landmarks" in dict_msg:
         face_landmarks = dict_msg["face_landmarks"]

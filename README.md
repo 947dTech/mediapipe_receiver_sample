@@ -11,7 +11,7 @@
 holistic trackingを用いることで、スマホ一台で全身トラッキングが可能です。
 
 Android側のアプリケーションは
-Humanoid Interface for Real-time Observation take 3の
+Humanoid Interface for Real-time Observation 4の
 コントローラとして使用されているものと同一のプログラムになります。
 
 ### 必要なもの
@@ -39,7 +39,7 @@ https://google.github.io/mediapipe/getting_started/android.html
 Android appのビルドは以下のコマンドでできます。
 
 ```
-$ bazelisk build mediapipe/examples/android/src/java/com/google/mediapipe/apps/holistictrackinggpu:holistictrackinggpu
+$ bazelisk build -c opt --config=android_arm64 --linkopt="-s" mediapipe/examples/android/src/java/com/google/mediapipe/apps/holistictrackinggpu:holistictrackinggpu
 ```
 
 インストールは実機をadbで認識させた上で、以下の方法でできます。
@@ -71,6 +71,19 @@ https://google.github.io/mediapipe/solutions/holistic.html
 
 また、スマホの向きを認識するための`gravity`を同時に送信しています。
 カメラ向きの推定にご利用ください。
+
+- `gravity`: 重力ベクトル
+- `gravity_stamp`: 取得時刻
+
+(2022/11 update)
+カメラパラメータを追加で送信しています。
+これを用いることで、`pose_landmarks`と`pose_world_landmarks`を比較して
+カメラ座標系における人物の三次元位置の推定が可能です。
+
+- `camera_params`
+    - `focal_length`: 焦点距離(単位はピクセル)
+    - `frame_width`: 画像の幅
+    - `frame_height`: 画像の高さ
 
 
 ## 本プログラムの動かし方
@@ -120,10 +133,11 @@ json形式で保存します。
 
 #### 再生
 
-単一ファイルの再生のみ行うことができます。
+単一ファイルを指定した場合そのファイルを繰り返し送信します。
+ディレクトリを指定した場合はディレクトリ内のファイルを連続で送信します。
 
 ```
-$ python3 json_sender.py -i <ファイル名>
+$ python3 json_sender.py -i <ファイルもしくはディレクトリ名>
 ```
 
 `-t`にIPアドレスを与えることで送信先を変更することができます。

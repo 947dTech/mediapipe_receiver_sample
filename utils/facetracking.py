@@ -8,22 +8,6 @@ import numpy as np
 import itertools
 
 # from mediapipe/python/solutions/face_mesh.py
-# https://github.com/google/mediapipe/blob/v0.8.6/mediapipe/python/solutions/face_mesh.py
-# this source code is redistributed under the Apache 2.0 License;
-#
-# Copyright 2020 The MediaPipe Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 FACE_CONNECTIONS = frozenset([
     # Lips.
     (61, 146),
@@ -241,16 +225,81 @@ LEFT_EYE_CONNECTIONS = frozenset([
     (398, 362)  # ^ upper, inside
 ])
 
+
 def extract_points(points, connections):
     indices = list(set(list(itertools.chain.from_iterable(connections))))
     new_points = list(map(lambda x: points[x], indices))
     return new_points
 
+
 def extract_lip_points(points):
     return extract_points(points, LIP_CONNECTIONS)
+
 
 def extract_right_eye_points(points):
     return extract_points(points, RIGHT_EYE_CONNECTIONS)
 
+
 def extract_left_eye_points(points):
     return extract_points(points, LEFT_EYE_CONNECTIONS)
+
+
+def calc_eyes_params(face_points):
+    # eye blink
+    eyes_distance = np.linalg.norm(face_points[133] - face_points[362])  # for normalize
+    r_eye_length = np.linalg.norm(face_points[33] - face_points[133]) / eyes_distance
+    r_eye_distance = np.linalg.norm(face_points[145] - face_points[159]) / eyes_distance
+    r_eye_area = r_eye_distance * r_eye_length
+    r_eye_ndist = r_eye_distance / r_eye_length
+    r_eye_blink = 1.0 - r_eye_ndist
+    # r_eye_blink = 1.0 - (r_eye_distance / eyes_distance)
+
+    l_eye_length = np.linalg.norm(face_points[263] - face_points[362]) / eyes_distance
+    l_eye_distance = np.linalg.norm(face_points[374] - face_points[386]) / eyes_distance
+    l_eye_area = l_eye_distance * l_eye_length
+    l_eye_ndist = l_eye_distance / l_eye_length
+    l_eye_blink = 1.0 - l_eye_ndist
+    # l_eye_blink = 1.0 - (l_eye_distance / eyes_distance)
+
+    return (
+        r_eye_blink, r_eye_length, r_eye_distance, r_eye_area, r_eye_ndist,
+        l_eye_blink, l_eye_length, l_eye_distance, l_eye_area, l_eye_ndist)
+
+
+def calc_mouth_params(face_points):
+    eyes_distance = np.linalg.norm(face_points[133] - face_points[362])  # for normalize
+
+    # mouth shape
+    lip_distance = np.linalg.norm(face_points[13] - face_points[14])
+    lip_edges_center = 0.5 * (face_points[78] + face_points[308])
+    lip_center_center = 0.5 * (face_points[13] + face_points[14])
+    mouth_vector = face_points[0] - face_points[17]
+    lip_edges_center_vector = lip_edges_center - face_points[17]
+    lip_center_center_vector = lip_center_center - face_points[17]
+
+    mouth_open = lip_distance / eyes_distance
+    t_lip_edges_center = np.dot(mouth_vector, lip_edges_center_vector)
+    t_lip_center_center = np.dot(mouth_vector, lip_center_center_vector)
+    smile = (t_lip_edges_center - t_lip_center_center) / eyes_distance
+
+    return (mouth_open, smile)
+
+
+def calc_face_transform(face_points):
+    r_eye_pt = 0.5 * (face_points[33] + face_points[133])
+    l_eye_pt = 0.5 * (face_points[263] + face_points[362])
+    lip_pt = 0.5 * (face_points[13] + face_points[14])
+
+    x_vec = l_eye_pt - r_eye_pt
+    y_vec = lip_pt - 0.5 * (r_eye_pt + l_eye_pt)
+    x_vec /= np.linalg.norm(x_vec)
+    y_vec /= np.linalg.norm(y_vec)
+    z_vec = np.cross(x_vec, y_vec)
+
+    face_co = np.eye(3)
+    face_co[:3, 0] = x_vec
+    face_co[:3, 1] = y_vec
+    face_co[:3, 2] = z_vec
+    face_pos = np.array([0.0, 0.0, 0.0])
+
+    return (face_pos, face_co)
