@@ -51,10 +51,16 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 try:
     while True:
         for (dict_msg, sptime) in zip(data_list, sleeptimes):
+            t0 = time.time()
             json_msg = json.dumps(dict_msg)
 
             # print("send: \"%s\" to %s:%d" % (json_msg, host, port))
             sock.sendto(json_msg.encode("utf-8"), (host, port))
-            time.sleep(sptime)
+            t1 = time.time()
+            dur = sptime - (t1 - t0)
+            if dur > 0.0:
+                time.sleep(dur)
+            else:
+                print("frame dropped!")
 except KeyboardInterrupt:
     sock.close()
