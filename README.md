@@ -24,9 +24,9 @@ Humanoid Interface for Real-time Observation 4の
 
 まず、改造版mediapipeのソースコードをgithubから取得してください。
 
-https://github.com/hyaguchi947d/mediapipe
+https://github.com/947dTech/mediapipe
 
-`holistic_v089_release`というブランチを使用します。
+`holistic_v0.9.2.1_release`というブランチを使用します。
 
 mediapipe環境の構築はDockerの利用を推奨します。
 
