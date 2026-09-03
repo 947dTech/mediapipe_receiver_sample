@@ -48,9 +48,11 @@ ax.set_zlim([-0.5, 0.5])
 # convert to np list
 (pose_list, pose_stamp,
     pose_world_list, pose_world_stamp,
-    face_list, face_stamp,
+    face_list, face_blendshapes, face_stamp,
     right_hand_list, right_hand_stamp,
-    left_hand_list, left_hand_stamp) = utils.holistic_list(dict_msg, aspect_ratio=aspect_ratio)
+    right_hand_world_list, right_hand_world_stamp,
+    left_hand_list, left_hand_stamp,
+    left_hand_world_list, left_hand_world_stamp) = utils.holistic_list(dict_msg, aspect_ratio=aspect_ratio)
 
 # calc min/max
 def min_max_points(landmark_list, label):
